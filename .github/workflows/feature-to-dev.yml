@@ -9,27 +9,30 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Install backend dependencies
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
       working-directory: ./backend
-      run: |
-        npm install
-    - name: Run backend tests
-      working-directory: ./backend
-      run: |
-        npm test
+    - run: npm ci
+    - run: npm run build --if-present
+    - run: npm test
 
     - name: Install frontend dependencies
       working-directory: ./frontend
-      run: |
-        npm install
-    - name: Run frontend tests
-      working-directory: ./frontend
-      run: |
-        npm test
-        
+      steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+      working-directory: ./backend
+    - run: npm ci
+    - run: npm run build --if-present
+    - run: npm test
 
     - name: Trigger dev-to-main merge workflow
       if: success() 
