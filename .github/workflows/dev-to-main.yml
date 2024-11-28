@@ -12,14 +12,19 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+
     - name: Install backend dependencies
       working-directory: ./backend
       run: |
-        npm install
+        npm ci
     - name: Run backend tests
       working-directory: ./backend
       run: |
-        npm test
+        npm test -- --verbose
 
     - name: Install frontend dependencies
       working-directory: ./frontend
@@ -29,7 +34,7 @@ jobs:
       working-directory: ./frontend
       run: |
         npm test
-        
+
 
     - name: Build and push docker image
       uses: mr-smithers-excellent/docker-build-push@v6
