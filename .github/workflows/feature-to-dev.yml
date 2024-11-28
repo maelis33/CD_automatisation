@@ -1,0 +1,40 @@
+name: Feature to Dev Workflow
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+     
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          npm install
+      - name: Run backend tests
+        working-directory: ./backend
+        run: |
+          npm test
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: |
+          npm install
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: |
+          npm test
+
+      - name: Trigger dev-to-main merge workflow
+        if: success() 
+        run: |
+          echo "Triggering dev-to-main workflow"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

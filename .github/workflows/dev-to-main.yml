@@ -1,0 +1,41 @@
+name: Main Branch Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-test-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          npm install
+      - name: Run backend tests
+        working-directory: ./backend
+        run: |
+          npm test
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: |
+          npm install
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: |
+          npm test
+
+      - name: build and push docker image
+      uses: mr-smithers-excellent/docker-build-push@v6
+      with:
+        image: maepatante/CD_automatisation
+        registry: docker.io
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
