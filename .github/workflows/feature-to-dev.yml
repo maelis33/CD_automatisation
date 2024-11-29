@@ -1,4 +1,4 @@
-name: Feature to Dev Workflow
+name: Dev Branch CI Workflow
 
 on:
   push:
@@ -8,39 +8,49 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
+
     services:
       mongodb:
         image: mongo:latest
         ports:
           - 27018:27017
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    
+        node-version: '18'
+
     - name: Install backend dependencies
       working-directory: ./backend
       run: |
-        npm ci
-        npm run build --if-present
-        npm test
-    
+        npm install
+    - name: Run backend tests
+      working-directory: ./backend
+      run: |
+        npm test 
+
     - name: Install frontend dependencies
       working-directory: ./frontend
       run: |
-        npm ci
-        npm run build --if-present
-        npm test
-    
-    - name: Trigger dev-to-main merge workflow
-      if: success() 
+        npm install
+    - name: Run frontend tests
+      working-directory: ./frontend
       run: |
-        echo "Triggering dev-to-main workflow"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        npm test
+
+    - name: Merge dev to main
+      if: success()
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          github.rest.repos.merge({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            base: 'main',
+            head: 'dev'
+          })
